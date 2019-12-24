@@ -21,6 +21,55 @@ config({
     require(`./handlers/${handler}`)(client);
 });
 
+let userApplications = {}
+
+client.on("message", function(message) {
+  if (message.author.equals(client.user)) return;
+
+  let authorId = message.author.id;
+
+  if (message.content === "%apply") {
+      console.log(`Złóż wniosek o autorId ${authorId}`);
+      // User is not already in a registration process    
+      if (!(authorId in userApplications)) {
+          userApplications[authorId] = { "step" : 1}
+
+          message.author.send("```Musimy zadać kilka pytań, abyśmy mogli poznać trochę siebie```");
+          message.author.send("```Uruchomiona aplikacja - wpisz „#Anuluj”, aby anulować aplikację```");
+          message.author.send("```Pytanie 1: Nazwa w grze?```");
+      }
+
+  } else {
+
+      if (message.channel.type === "dm" && authorId in userApplications) {
+          let authorApplication = userApplications[authorId];
+
+          if (authorApplication.step == 1 ) {
+              message.author.send("```Pytanie 2: Wiek?```");
+              authorApplication.step ++;
+          }
+          else if (authorApplication.step == 2) {
+              message.author.send("```Pytanie 3: Strefa czasowa? NA, AU, EU, NZ lub inne? (Jeśli inny, opisz swoją strefę czasową)```");
+              authorApplication.step ++;
+          }
+          else if (authorApplication.step == 3) {
+              message.author.send("```Pytanie 4: Czy masz schematica?```");
+              authorApplication.step ++;
+          }
+
+          else if (authorApplication.step == 4) {
+              message.author.send("```Dziękujemy za rejestrację. Wpisz %apply, aby zarejestrować się ponownie```");
+              delete userApplications[authorId];
+          }
+
+      }
+  }
+
+
+});
+
+
+
 
 
 client.on("ready", () => {
